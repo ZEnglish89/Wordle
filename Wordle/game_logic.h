@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <time.h>
 #define TEXTRESET "\033[0m"
 #define TEXTGREEN "\033[32m"
 #define TEXTYELLOW "\033[33m"
@@ -22,8 +23,9 @@ void RunGame(){
     string guess;
     ifstream file;
     ifstream allowed;
-    vector<string> keyboard={TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET};
-    vector<string> lettercolor={"","","","",""};
+    vector<string> keyboard={TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET,TEXTRESET};//the macros for the colors of the keyboard. This is lengthy, but it's just 26 for the 26 letters.
+    vector<string> lettercolor={"","","","",""}; //the colors for the five letters in the word, starting blank.
+
     ofstream key;
     key.open("../keyboard/letters.txt",ios::out);
     if(key.is_open()){
@@ -33,9 +35,9 @@ void RunGame(){
 //            key<<code<<endl;
         }
         key.close();
-    }
-    srand(time(0));
-    int randomnumber= rand()%2314;
+    } //start each game by making all of the keys on the keyboard white, because no letters have been guessed yet.
+    srand(time(0)); //seeding random based on the current time, so it doesn't give consistent values playthrough to playthrough.
+    int randomnumber= rand()%2314; //picking which word will be the solution.
     file.open("words.txt",ios::in);
     if(file.is_open()){
         int increments=0;
@@ -46,43 +48,41 @@ void RunGame(){
                 answer=element;
         }
         file.close();
-    }
+    } //finding the word, as well as adding all of the words to the pool of valid guesses.
     allowed.open("allowed.txt",ios::in);
     if(allowed.is_open()){
         while(getline(allowed,element)){
             validguesses.push_back(element);
         }
         allowed.close();
-    }
+    }//adding the items which are not words, but still valid guesses, to the pool of valid guesses.
     system("CLS");
     while(numguesses<6){
         cout<<"Enter Guess: ";
         cin>>guess;
-        cout<<"\033[1A"<<"\033[2K"<<"\033[0G";
-        if(find(validguesses.begin(),validguesses.end(),guess)!=validguesses.end()){
+        cout<<"\033[1A"<<"\033[2K"<<"\033[0G"; //the code to clear one line, so the "enter guess" prompt doesn't stay.
+        if(find(validguesses.begin(),validguesses.end(),guess)!=validguesses.end()){ // if the guess can be found within the pool of valid guesses, continue with the game. Otherwise, the gamelogic is skipped and the while loop iterates, allowing you to reguess with no penalty.
             numguesses++;
             for(int i=0;i<5;i++){
                 guess[i]=toupper(guess[i]);
                 answer[i]=toupper(answer[i]);
-            }
+            } //case insensitive.
             for(int i=0;i<5;i++){
+                lettercolor[i]=TEXTGRAY;//Assume the letter does not appear, then change it if it does.
                 for(int j=0;j<5;j++){
-                    if(lettercolor[i]==""){
-                        lettercolor[i]=TEXTGRAY;
-                    }
-                    if(guess[i]==answer[j]){
-                        if(i==j){
+                    if(guess[i]==answer[j]){ //if the letter matches one of the letters within the word.
+                        if(i==j){//if the letter is exactly where it should be.
                             lettercolor[i]=TEXTGREEN;
                             correctletters++;
-                            break;
+                            break;//add to the number of letters that are in the right spot, and move on to the next letter.
                         }
-                        else{
+                        else{//if the letter is in the wrong spot.
                             lettercolor[i]=TEXTYELLOW;
                         }
                     }
                 }
                 if(keyboard[int(guess[i])-65]!=TEXTGREEN)
-                    keyboard[int(guess[i])-65]=lettercolor[i];
+                    keyboard[int(guess[i])-65]=lettercolor[i]; //Update the keyboard macros to match the colors of the letters you just guessed. However, if you've already turned a letter green, it will remain green even if you put it somewhere else in a later guess.
             }
             key.open("../keyboard/letters.txt",ios::out);
             if(key.is_open()){
@@ -97,15 +97,15 @@ void RunGame(){
                     key<<6<<endl;
                 }
                 key.close();
-            }
-            PrintGuess(guess,lettercolor);
+            } //Write the updated keyboard colors out to the keyboard file. Because of some fuckery on my part, 3 corresponds to white, 4 to gray, etc.
+            PrintGuess(guess,lettercolor); //print the guess the player just made, properly formatted and matching the colors.
             if(correctletters==5){
                 victory=true;
                 break;
-            }
+            }//If all five letters are correct, the player wins, and you stop the game.
             else
                 correctletters=0;
-            lettercolor={"","","","",""};
+            lettercolor={"","","","",""};//otherwise, reset the letters and colors for the next guess and loop.
         }
     }
     if(victory){
@@ -120,7 +120,7 @@ void RunGame(){
     if(stats.is_open()){
         stats<<answer<<","<<numguesses<<","<<victory<<endl;
         stats.close();
-    }
+    }//update the stats file with the results of the current game.
     cout<<endl<<"Press [enter] to continue"<<endl;
     while(true){
         cin.ignore();
@@ -132,7 +132,7 @@ void RunGame(){
             }
             return;
         }
-    }
+    }//When you hit enter, notify the keyboard that the game has ended and then return to the menu.
 }
 void PrintGuess(string guess,vector<string>lettercolor){
     for(int i=0;i<5;i++){
