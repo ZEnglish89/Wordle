@@ -11,6 +11,3 @@ gibberish in an attempt to eliminate letters optimally). the ability to save sta
 The /Keyboard folder contains both code files and .txt files necessary to display a color-changing keyboard to accompany the game, just as in the original. Whenever an update is made within the game file, it also updates the .txt files which
 the keyboard pulls from. Whenever you are in game, the keyboard will be accurate. It is possible to leave a keyboard from a previous game displaying by closing the game via ctrl+c rather than the intended method, but the moment the game is relaunched the
 keyboard will catch up again.
-
-Potential bug: upon first downloading the code, attempting to display the stats may cause the game to crash. It is unknown to me why this happens, and it *may* be fixed as of
-the latest commit. Resetting the stats fixes this issue, and appears to do so permanently.
